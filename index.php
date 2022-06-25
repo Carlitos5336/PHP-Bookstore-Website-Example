@@ -1,8 +1,11 @@
-<html>
- <head>
-  <title>PHP Test</title>
- </head>
- <body>
- <?php echo '<p>Hello Willis</p>'; ?> 
- </body>
-</html>
+<?php
+
+
+include "header.php";
+
+include "body.php";
+include "newslettter.php";
+include "footer.php";
+?>
+		
+		

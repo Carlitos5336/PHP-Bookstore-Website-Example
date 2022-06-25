@@ -1,360 +1,316 @@
-<html>
-<body style="font-family:Arial; margin: 0 auto; background-color: #f2f2f2;">
-<header>
-<blockquote>
-	<img src="image/logo.png">
-	<input class="hi" style="float: right; margin: 2%;" type="button" name="cancel" value="Home" onClick="window.location='index.php';" />
-</blockquote>
-</header>
 <?php
-session_start();
+include "db.php";
 
-if(isset($_SESSION['id'])){
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
+include "header.php";
 
-	$conn = new mysqli($servername, $username, $password); 
 
-	if ($conn->connect_error) {
-	    die("Connection failed: " . $conn->connect_error);
-	} 
-
-	$sql = "USE bookstore";
-	$conn->query($sql);
-
-	$sql = "SELECT CustomerID from customer WHERE UserID = ".$_SESSION['id']."";
-	$result = $conn->query($sql);
-	while($row = $result->fetch_assoc()){
-		$cID = $row['CustomerID'];
-	}
-
-	$sql = "UPDATE cart SET CustomerID = ".$cID." WHERE 1";
-	$conn->query($sql);
-
-	$sql = "SELECT * FROM cart";
-	$result = $conn->query($sql);
-	while($row = $result->fetch_assoc()){
-		$sql = "INSERT INTO `order`(CustomerID, BookID, DatePurchase, Quantity, TotalPrice, Status) 
-		VALUES(".$row['CustomerID'].", '".$row['BookID']
-		."', CURRENT_TIME, ".$row['Quantity'].", ".$row['TotalPrice'].", 'N')";
-		$conn->query($sql);
-	}
-	$sql = "DELETE FROM cart";
-	$conn->query($sql);
-
-	$sql = "SELECT customer.CustomerName, customer.CustomerIC, customer.CustomerGender, customer.CustomerAddress, customer.CustomerEmail, customer.CustomerPhone, book.BookTitle, book.Price, book.Image, `order`.`DatePurchase`, `order`.`Quantity`, `order`.`TotalPrice`
-		FROM customer, book, `order`
-		WHERE `order`.`CustomerID` = customer.CustomerID AND `order`.`BookID` = book.BookID AND `order`.`Status` = 'N' AND `order`.`CustomerID` = ".$cID."";
-	$result = $conn->query($sql);
-	echo '<div class="container">';
-	echo '<blockquote>';
+                         
 ?>
-<input class="button" style="float: right;" type="button" name="cancel" value="Continue Shopping" onClick="window.location='index.php';" />
-<?php
-	echo '<h2 style="color: #000;">Order Successful</h2>';
-	echo "<table style='width:100%'>";
-	echo "<tr><th>Order Summary</th>";
-	echo "<th></th></tr>";
-	$row = $result->fetch_assoc();
-	echo "<tr><td>Name: </td><td>".$row['CustomerName']."</td></tr>";
-	echo "<tr><td>No.Number: </td><td>".$row['CustomerIC']."</td></tr>";
-	echo "<tr><td>E-mail: </td><td>".$row['CustomerEmail']."</td></tr>";
-	echo "<tr><td>Mobile Number: </td><td>".$row['CustomerPhone']."</td></tr>";
-	echo "<tr><td>Gender: </td><td>".$row['CustomerGender']."</td></tr>";
-	echo "<tr><td>Address: </td><td>".$row['CustomerAddress']."</td></tr>";
-	echo "<tr><td>Date: </td><td>".$row['DatePurchase']."</td></tr>";
-	echo "</blockquote>";
 
-	$sql = "SELECT customer.CustomerName, customer.CustomerIC, customer.CustomerGender, customer.CustomerAddress, customer.CustomerEmail, customer.CustomerPhone, book.BookTitle, book.Price, book.Image, `order`.`DatePurchase`, `order`.`Quantity`, `order`.`TotalPrice`
-		FROM customer, book, `order`
-		WHERE `order`.`CustomerID` = customer.CustomerID AND `order`.`BookID` = book.BookID AND `order`.`Status` = 'N' AND `order`.`CustomerID` = ".$cID."";
-	$result = $conn->query($sql);
-	$total = 0;
-	while($row = $result->fetch_assoc()){
-		echo "<tr><td style='border-top: 2px solid #ccc;'>";
-		echo '<img src="'.$row["Image"].'"width="20%"></td><td style="border-top: 2px solid #ccc;">';
-    	echo $row['BookTitle']."<br>RM".$row['Price']."<br>";
-    	echo "Quantity: ".$row['Quantity']."<br>";
-    	echo "</td></tr>";
-    	$total += $row['TotalPrice'];
-	}
-	echo "<tr><td style='background-color: #ccc;'></td><td style='text-align: right;background-color: #ccc;''>Total Price: <b>RM".$total."</b></td></tr>";
-	echo "</table>";
-	echo "</div>";
+<style>
 
-	$sql = "UPDATE `order` SET Status = 'y' WHERE CustomerID = ".$cID."";
-	$conn->query($sql);
+.row-checkout {
+  display: -ms-flexbox; /* IE10 */
+  display: flex;
+  -ms-flex-wrap: wrap; /* IE10 */
+  flex-wrap: wrap;
+  margin: 0 -16px;
 }
 
-$nameErr = $emailErr = $genderErr = $addressErr = $icErr = $contactErr = "";
-$name = $email = $gender = $address = $ic = $contact = "";
-$cID;
-
-if(isset($_POST['submitButton'])){
-	if (empty($_POST["name"])) {
-		$nameErr = "Please enter your name";
-	}else{
-		if (!preg_match("/^[a-zA-Z ]*$/", $name)){
-			$nameErr = "Only letters and white space allowed";
-			$name = "";
-		}else{
-			$name = $_POST['name'];
-			if (empty($_POST["ic"])){
-				$icErr = "Please enter your IC number";
-			}else{
-				if(!preg_match("/^[0-9 -]*$/", $ic)){
-					$icErr = "Please enter a valid IC number";
-					$ic = "";
-				}else{
-					$ic = $_POST['ic'];
-					if (empty($_POST["email"])){
-						$emailErr = "Please enter your email address";
-					}else{
-						if (filter_var($email, FILTER_VALIDATE_EMAIL)){
-							$emailErr = "Invalid email format";
-							$email = "";
-						}else{
-							$email = $_POST['email'];
-							if (empty($_POST["contact"])){
-								$contactErr = "Please enter your phone number";
-							}else{
-								if(!preg_match("/^[0-9 -]*$/", $contact)){
-									$contactErr = "Please enter a valid phone number";
-									$contact = "";
-								}else{
-									$contact = $_POST['contact'];
-									if (empty($_POST["gender"])){
-										$genderErr = "* Gender is required!";
-										$gender = "";
-									}else{
-										$gender = $_POST['gender'];
-										if (empty($_POST["address"])){
-											$addressErr = "Please enter your address";
-											$address = "";
-										}else{
-											$address = $_POST['address'];
-
-											$servername = "localhost";
-											$username = "root";
-											$password = "";
-
-											$conn = new mysqli($servername, $username, $password); 
-
-											if ($conn->connect_error) {
-											    die("Connection failed: " . $conn->connect_error);
-											} 
-
-											$sql = "USE bookstore";
-											$conn->query($sql);
-
-											$sql = "INSERT INTO customer(CustomerName, CustomerPhone, CustomerIC, CustomerEmail, CustomerAddress, CustomerGender) 
-											VALUES('".$name."', '".$contact."', '".$ic."', '".$email."', '".$address."', '".$gender."')";
-											$conn->query($sql);
- 
-											$sql = "SELECT CustomerID from customer WHERE CustomerName = '".$name."' AND CustomerIC = '".$ic."'";
-											$result = $conn->query($sql);
-											while($row = $result->fetch_assoc()){
-												$cID = $row['CustomerID'];
-											}
-
-											$sql = "UPDATE cart SET CustomerID = ".$cID." WHERE 1";
-											$conn->query($sql);
-
-											$sql = "SELECT * FROM cart";
-											$result = $conn->query($sql);
-											while($row = $result->fetch_assoc()){
-												$sql = "INSERT INTO `order`(CustomerID, BookID, DatePurchase, Quantity, TotalPrice, Status) 
-												VALUES(".$row['CustomerID'].", '".$row['BookID']
-												."', CURRENT_TIME, ".$row['Quantity'].", ".$row['TotalPrice'].", 'N')";
-												$conn->query($sql);
-											}
-											$sql = "DELETE FROM cart";
-											$conn->query($sql);
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-	}
+.col-25 {
+  -ms-flex: 25%; /* IE10 */
+  flex: 25%;
 }
-function test_input($data){
-	$data = trim($data);
-	$data = stripcslashes($data);
-	$data = htmlspecialchars($data);
-	return $data;
+
+.col-50 {
+  -ms-flex: 50%; /* IE10 */
+  flex: 50%;
 }
-?>
-<style> 
-header {
-	background-color: rgb(0,51,102);
-	width: 100%;
+
+.col-75 {
+  -ms-flex: 75%; /* IE10 */
+  flex: 75%;
 }
-header img {
-	margin: 1%;
+
+.col-25,
+.col-50,
+.col-75 {
+  padding: 0 16px;
 }
-header .hi{
-    background-color: #fff;
-    border: none;
-    border-radius: 20px;
-    text-align: center;
-    transition-duration: 0.5s; 
-    padding: 8px 30px;
-    cursor: pointer;
-    color: #000;
-    margin-top: 15%;
+
+.container-checkout {
+  background-color: #f2f2f2;
+  padding: 5px 20px 15px 20px;
+  border: 1px solid lightgrey;
+  border-radius: 3px;
 }
-header .hi:hover{
-    background-color: #ccc;
-}
-form{
-	margin-top: 1%;
-	float: left;
-	width: 40%;
-	color: #000;
-}
+
 input[type=text] {
-	padding: 5px;
-    border-radius: 3px;
-    box-sizing: border-box;
-    border: 2px solid #ccc;
-    transition: 0.5s;
-    outline: none;
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
 }
-input[type=text]:focus {
-    border: 2px solid rgb(0,51,102);
-}
-textarea {
-	outline: none;
-	border: 2px solid #ccc;
-}
-textarea:focus {
-	border: 2px solid rgb(0,51,102);
-}
-.button{
-    background-color: rgb(0,51,102);
-    border: none;
-    border-radius: 20px;
-    text-align: center;
-    transition-duration: 0.5s; 
-    padding: 8px 30px;
-    cursor: pointer;
-    color: #fff;
-}
-.button:hover {
-    background-color: rgb(102,255,255);
-    color: #000;
-}
-table {
-    border-collapse: collapse;
-    width: 60%;
-    float: right;
-}
-th, td {
-    text-align: left;
-    padding: 8px;
-}
-tr{background-color: #fff;}
 
-th {
-    background-color: rgb(0,51,102);
-    color: white;
+label {
+  margin-bottom: 10px;
+  display: block;
 }
-.container {
-	width: 50%;
-    border-radius: 5px;
-    background-color: #f2f2f2;
-    padding: 20px;
-    margin: 0 auto;
+
+.icon-container {
+  margin-bottom: 20px;
+  padding: 7px 0;
+  font-size: 24px;
+}
+
+.checkout-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  width: 100%;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 17px;
+}
+
+.checkout-btn:hover {
+  background-color: #45a049;
+}
+
+
+
+hr {
+  border: 1px solid lightgrey;
+}
+
+span.price {
+  float: right;
+  color: grey;
+}
+
+/* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other (also change the direction - make the "cart" column go on top) */
+@media (max-width: 800px) {
+  .row-checkout {
+    flex-direction: column-reverse;
+  }
+  .col-25 {
+    margin-bottom: 20px;
+  }
 }
 </style>
-<blockquote>
+
+					
+<section class="section">       
+	<div class="container-fluid">
+		<div class="row-checkout">
+		<?php
+		if(isset($_SESSION["uid"])){
+			$sql = "SELECT * FROM user_info WHERE user_id='$_SESSION[uid]'";
+			$query = mysqli_query($con,$sql);
+			$row=mysqli_fetch_array($query);
+		
+		echo'
+			<div class="col-75">
+				<div class="container-checkout">
+				<form id="checkout_form" action="checkout_process.php" method="POST" class="was-validated">
+
+					<div class="row-checkout">
+					
+					<div class="col-50">
+						<h3>Billing Address</h3>
+						<label for="fname"><i class="fa fa-user" ></i> Full Name</label>
+						<input type="text" id="fname" class="form-control" name="firstname" pattern="^[a-zA-Z ]+$"  value="'.$row["first_name"].' '.$row["last_name"].'">
+						<label for="email"><i class="fa fa-envelope"></i> Email</label>
+						<input type="text" id="email" name="email" class="form-control" pattern="^[_a-z0-9-]+(\.[_a-z0-9-]+)*@[a-z0-9]+(\.[a-z]{2,4})$" value="'.$row["email"].'" required>
+						<label for="adr"><i class="fa fa-address-card-o"></i> Address</label>
+						<input type="text" id="adr" name="address" class="form-control" value="'.$row["address1"].'" required>
+						<label for="city"><i class="fa fa-institution"></i> City</label>
+						<input type="text" id="city" name="city" class="form-control" value="'.$row["address2"].'" pattern="^[a-zA-Z ]+$" required>
+
+						<div class="row">
+						<div class="col-50">
+							<label for="state">State</label>
+							<input type="text" id="state" name="state" class="form-control" pattern="^[a-zA-Z ]+$" required>
+						</div>
+						<div class="col-50">
+							<label for="zip">Zip</label>
+							<input type="text" id="zip" name="zip" class="form-control" pattern="^[0-9]{6}(?:-[0-9]{4})?$" required>
+						</div>
+						</div>
+					</div>
+					
+					
+					<div class="col-50">
+						<h3>Payment</h3>
+						<label for="fname">Accepted Cards</label>
+						<div class="icon-container">
+						<i class="fa fa-cc-visa" style="color:navy;"></i>
+						<i class="fa fa-cc-amex" style="color:blue;"></i>
+						<i class="fa fa-cc-mastercard" style="color:red;"></i>
+						<i class="fa fa-cc-discover" style="color:orange;"></i>
+						</div>
+						
+						
+						<label for="cname">Name on Card</label>
+						<input type="text" id="cname" name="cardname" class="form-control" pattern="^[a-zA-Z ]+$" required>
+						
+						<div class="form-group" id="card-number-field">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" class="form-control" id="cardNumber" name="cardNumber" required>
+                    </div>
+						<label for="expdate">Exp Date</label>
+						<input type="text" id="expdate" name="expdate" class="form-control" pattern="^((0[1-9])|(1[0-2]))\/(\d{2})$" placeholder="12/22"required>
+						
+
+						<div class="row">
+						
+						<div class="col-50">
+							<div class="form-group CVV">
+								<label for="cvv">CVV</label>
+								<input type="text" class="form-control" name="cvv" id="cvv" required>
+						</div>
+						</div>
+					</div>
+					</div>
+					</div>
+					<label><input type="CHECKBOX" name="q" class="roomselect" value="conform" required> Shipping address same as billing
+					</label>';
+					$i=1;
+					$total=0;
+					$total_count=$_POST['total_count'];
+					while($i<=$total_count){
+						$item_name_ = $_POST['item_name_'.$i];
+						$amount_ = $_POST['amount_'.$i];
+						$quantity_ = $_POST['quantity_'.$i];
+						$total=$total+$amount_ ;
+						$sql = "SELECT product_id FROM products WHERE product_title='$item_name_'";
+						$query = mysqli_query($con,$sql);
+						$row=mysqli_fetch_array($query);
+						$product_id=$row["product_id"];
+						echo "	
+						<input type='hidden' name='prod_id_$i' value='$product_id'>
+						<input type='hidden' name='prod_price_$i' value='$amount_'>
+						<input type='hidden' name='prod_qty_$i' value='$quantity_'>
+						";
+						$i++;
+					}
+					
+				echo'	
+				<input type="hidden" name="total_count" value="'.$total_count.'">
+					<input type="hidden" name="total_price" value="'.$total.'">
+					
+					<input type="submit" id="submit" value="Continue to checkout" class="checkout-btn">
+				</form>
+				</div>
+			</div>
+			';
+		}else{
+			echo"<script>window.location.href = 'cart.php'</script>";
+		}
+		?>
+
+			<div class="col-25">
+				<div class="container-checkout">
+				
+				<?php
+				if (isset($_POST["cmd"])) {
+				
+					$user_id = $_POST['custom'];
+					
+					
+					$i=1;
+					echo
+					"
+					<h4>Cart 
+					<span class='price' style='color:black'>
+					<i class='fa fa-shopping-cart'></i> 
+					<b>$total_count</b>
+					</span>
+				</h4>
+
+					<table class='table table-condensed'>
+					<thead><tr>
+					<th >no</th>
+					<th >product title</th>
+					<th >	qty	</th>
+					<th >	amount</th></tr>
+					</thead>
+					<tbody>
+					";
+					$total=0;
+					while($i<=$total_count){
+						$item_name_ = $_POST['item_name_'.$i];
+						
+						$item_number_ = $_POST['item_number_'.$i];
+						
+						$amount_ = $_POST['amount_'.$i];
+						
+						$quantity_ = $_POST['quantity_'.$i];
+						$total=$total+$amount_ ;
+						$sql = "SELECT product_id FROM products WHERE product_title='$item_name_'";
+						$query = mysqli_query($con,$sql);
+						$row=mysqli_fetch_array($query);
+						$product_id=$row["product_id"];
+					
+						echo "	
+
+						<tr><td><p>$item_number_</p></td><td><p>$item_name_</p></td><td ><p>$quantity_</p></td><td ><p>$amount_</p></td></tr>";
+						
+						$i++;
+					}
+
+				echo"
+
+				</tbody>
+				</table>
+				<hr>
+				
+				<h3>total<span class='price' style='color:black'><b>$$total</b></span></h3>";
+					
+				}
+				?>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+		<div id="newsletter" class="section">
+			<!-- container -->
+			<div class="container">
+				<!-- row -->
+				<div class="row">
+					<div class="col-md-12">
+						<div class="newsletter">
+							<p>Sign Up for the <strong>NEWSLETTER</strong></p>
+							<form >
+								<input class="input" type="email" placeholder="Enter Your Email">
+								<button class="newsletter-btn"><i class="fa fa-envelope"></i> Subscribe</button>
+							</form>
+							<ul class="newsletter-follow">
+								<li>
+									<a href="#"><i class="fa fa-facebook"></i></a>
+								</li>
+								<li>
+									<a href="#"><i class="fa fa-twitter"></i></a>
+								</li>
+								<li>
+									<a href="#"><i class="fa fa-instagram"></i></a>
+								</li>
+								<li>
+									<a href="#"><i class="fa fa-pinterest"></i></a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+				<!-- /row -->
+			</div>
+			<!-- /container -->
+		</div>
+		
 <?php
-if(!isset($_SESSION['id'])){
-	echo "<form method='post'  action=''>";
-
-	echo 'Name:<br><input type="text" name="name" placeholder="Full Name">';
-	echo '<span class="error" style="color: red; font-size: 0.8em;"><?php echo $nameErr;?></span><br><br>';
-
-	echo 'IC Number:<br><input type="text" name="ic" placeholder="xxxxxx-xx-xxxx">';
-	echo '<span class="error" style="color: red; font-size: 0.8em;"><?php echo $icErr;?></span><br><br>';
-
-	echo 'E-mail:<br><input type="text" name="email" placeholder="example@email.com">';
-	echo '<span class="error" style="color: red; font-size: 0.8em;"><?php echo $emailErr;?></span><br><br>';
-
-	echo 'Mobile Number:<br><input type="text" name="contact" placeholder="012-3456789">';
-	echo '<span class="error" style="color: red; font-size: 0.8em;"><?php echo $contactErr;?></span><br><br>';
-
-	echo '<label>Gender:</label><br>';
-	echo '<input type="radio" name="gender" if (isset($gender) && $gender == "Male") echo "checked"; value="Male">Male';
-	echo '<input type="radio" name="gender" if (isset($gender) && $gender == "Female") echo "checked"; value="Female">Female';
-	echo '<span class="error" style="color: red; font-size: 0.8em;"><?php echo $genderErr;?></span><br><br>';
-
-	echo '<label>Address:</label><br>';
-	   echo '<textarea name="address" cols="30" rows="5" placeholder="Address"></textarea>';
-	   echo '<span class="error" style="color: red; font-size: 0.8em;"><?php echo $addressErr;?></span><br><br>';
+include "footer.php";
 ?>
-<input class="button" type="button" name="cancel" value="Cancel" onClick="window.location='index.php';" />
-<?php
-	echo '<input class="button" type="submit" name="submitButton" value="CHECKOUT">';
-	echo '</form><br><br>';
-}
-
-if(isset($_POST['submitButton'])){
-	$servername = "localhost";
-	$username = "root";
-	$password = "";
-
-	$conn = new mysqli($servername, $username, $password); 
-
-	if ($conn->connect_error) {
-	    die("Connection failed: " . $conn->connect_error);
-	} 
-
-	$sql = "USE bookstore";
-	$conn->query($sql);
-
-	$sql = "SELECT customer.CustomerName, customer.CustomerIC, customer.CustomerGender, customer.CustomerAddress, customer.CustomerEmail, customer.CustomerPhone, book.BookTitle, book.Price, book.Image, `order`.`DatePurchase`, `order`.`Quantity`, `order`.`TotalPrice`
-		FROM customer, book, `order`
-		WHERE `order`.`CustomerID` = customer.CustomerID AND `order`.`BookID` = book.BookID AND `order`.`Status` = 'N' AND `order`.`CustomerID` = ".$cID."";
-	$result = $conn->query($sql);
-
-	echo '<table style="width: 40%">';
-	echo "<tr><th>Order Summary</th>";
-	echo "<th></th></tr>";
-	$row = $result->fetch_assoc();
-	echo "<tr><td>Name: </td><td>".$row['CustomerName']."</td></tr>";
-	echo "<tr><td>No.Number: </td><td>".$row['CustomerIC']."</td></tr>";
-	echo "<tr><td>E-mail: </td><td>".$row['CustomerEmail']."</td></tr>";
-	echo "<tr><td>Mobile Number: </td><td>".$row['CustomerPhone']."</td></tr>";
-	echo "<tr><td>Gender: </td><td>".$row['CustomerGender']."</td></tr>";
-	echo "<tr><td>Address: </td><td>".$row['CustomerAddress']."</td></tr>";
-	echo "<tr><td>Date: </td><td>".$row['DatePurchase']."</td></tr>";
-
-	$sql = "SELECT customer.CustomerName, customer.CustomerIC, customer.CustomerGender, customer.CustomerAddress, customer.CustomerEmail, customer.CustomerPhone, book.BookTitle, book.Price, book.Image, `order`.`DatePurchase`, `order`.`Quantity`, `order`.`TotalPrice`
-		FROM customer, book, `order`
-		WHERE `order`.`CustomerID` = customer.CustomerID AND `order`.`BookID` = book.BookID AND `order`.`Status` = 'N' AND `order`.`CustomerID` = ".$cID."";
-	$result = $conn->query($sql);
-	$total = 0;
-	while($row = $result->fetch_assoc()){
-		echo "<tr><td style='border-top: 2px solid #ccc;'>";
-		echo '<img src="'.$row["Image"].'"width="20%"></td><td style="border-top: 2px solid #ccc;">';
-    	echo $row['BookTitle']."<br>RM".$row['Price']."<br>";
-    	echo "Quantity: ".$row['Quantity']."<br>";
-    	echo "</td></tr>";
-    	$total += $row['TotalPrice'];
-	}
-	echo "<tr><td style='background-color: #ccc;'></td><td style='text-align: right;background-color: #ccc;'>Total Price: <b>RM".$total."</b></td></tr>";
-	echo "</table>";
-
-	$sql = "UPDATE `order` SET Status = 'y' WHERE CustomerID = ".$cID."";
-	$conn->query($sql);
-}
-?>
-</blockquote>
-</body>
-</html>
