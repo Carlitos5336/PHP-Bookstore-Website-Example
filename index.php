@@ -24,10 +24,10 @@ $output = <<<OUTPUT
             <div class="login-text">
                 <div class="logo">
                     <span><i class="fab fa-speakap"></i></span>
-                    <span>Coders</span>
+                    <span>Carlos Ogando</span>
                 </div>
                 <h1>Sign Up</h1>
-                <p>It's not long before you embark on this journey! </p>
+                <p>DEMO DE App para prof. Willis Polanco </p>
 
                 <form class="flex-c">
                     <div class="input-box">
@@ -39,7 +39,7 @@ $output = <<<OUTPUT
                     </div>
                     
                     <div class="input-box">
-                        <span class="label">Password</span>
+                        <span class="label">Contraseña</span>
                         <div class="flex-r input">
                             <input type="password" placeholder="8+ (a, A, 1, #)">
                             <i class="fas fa-lock"></i>
@@ -48,13 +48,13 @@ $output = <<<OUTPUT
 
                     <div class="check">
                         <input type="checkbox" name="" id="">
-                        <span>I've read and agree with T&C</span>
+                        <span>He leído los términos y condiciones</span>
                     </div>
 
-                    <input class="btn" type="submit" value="Create an Account">
+                    <input class="btn" type="submit" value="Crear nueva cuenta">
                     <span class="extra-line">
-                        <span>Already have an account?</span>
-                        <a href="#">Sign In</a>
+                        <span>¿Tienes una cuenta?</span>
+                        <a href="#">Iniciar sesión</a>
                     </span>
                 </form>
 
