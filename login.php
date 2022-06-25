@@ -1,100 +1,104 @@
-<?php
-include "db.php";
+<?php 
 
 session_start();
 
-#Login script is begin here
-#If user given credential matches successfully with the data available in database then we will echo string login_success
-#login_success string will go back to called Anonymous funtion $("#login").click() 
-
-if(isset($_POST["email"]) && isset($_POST["password"])){
-	$email = mysqli_real_escape_string($con,$_POST["email"]);
-	$password = $_POST["password"];
-	$sql = "SELECT * FROM user_info WHERE email = '$email' AND password = '$password'";
-	$run_query = mysqli_query($con,$sql);
-	$count = mysqli_num_rows($run_query);
-    $row = mysqli_fetch_array($run_query);
-		$_SESSION["uid"] = $row["user_id"];
-		$_SESSION["name"] = $row["first_name"];
-		$ip_add = getenv("REMOTE_ADDR");
-		//we have created a cookie in login_form.php page so if that cookie is available means user is not login
-        
-	//if user record is available in database then $count will be equal to 1
-	if($count == 1){
-		   	
-			if (isset($_COOKIE["product_list"])) {
-				$p_list = stripcslashes($_COOKIE["product_list"]);
-				//here we are decoding stored json product list cookie to normal array
-				$product_list = json_decode($p_list,true);
-				for ($i=0; $i < count($product_list); $i++) { 
-					//After getting user id from database here we are checking user cart item if there is already product is listed or not
-					$verify_cart = "SELECT id FROM cart WHERE user_id = $_SESSION[uid] AND p_id = ".$product_list[$i];
-					$result  = mysqli_query($con,$verify_cart);
-					if(mysqli_num_rows($result) < 1){
-						//if user is adding first time product into cart we will update user_id into database table with valid id
-						$update_cart = "UPDATE cart SET user_id = '$_SESSION[uid]' WHERE ip_add = '$ip_add' AND user_id = -1";
-						mysqli_query($con,$update_cart);
-					}else{
-						//if already that product is available into database table we will delete that record
-						$delete_existing_product = "DELETE FROM cart WHERE user_id = -1 AND ip_add = '$ip_add' AND p_id = ".$product_list[$i];
-						mysqli_query($con,$delete_existing_product);
-					}
-				}
-				//here we are destroying user cookie
-				setcookie("product_list","",strtotime("-1 day"),"/");
-				//if user is logging from after cart page we will send cart_login
-				echo "cart_login";
-				
-				
-				exit();
-				
-			}
-			//if user is login from page we will send login_success
-			echo "login_success";
-			$BackToMyPage = $_SERVER['HTTP_REFERER'];
-				if(!isset($BackToMyPage)) {
-					header('Location: '.$BackToMyPage);
-					echo"<script type='text/javascript'>
-					
-					</script>";
-				} else {
-					header('Location: index.php'); // default page
-				} 
-				
-			
-            exit;
-
-		}else{
-                $email = mysqli_real_escape_string($con,$_POST["email"]);
-                $password =md5($_POST["password"]) ;
-                $sql = "SELECT * FROM admin_info WHERE admin_email = '$email' AND admin_password = '$password'";
-                $run_query = mysqli_query($con,$sql);
-                $count = mysqli_num_rows($run_query);
-
-            //if user record is available in database then $count will be equal to 1
-            if($count == 1){
-                $row = mysqli_fetch_array($run_query);
-                $_SESSION["uid"] = $row["admin_id"];
-                $_SESSION["name"] = $row["admin_name"];
-                $ip_add = getenv("REMOTE_ADDR");
-                //we have created a cookie in login_form.php page so if that cookie is available means user is not login
-
-
-                    //if user is login from page we will send login_success
-                    echo "login_success";
-
-                    echo "<script> location.href='admin/add_product.php'; </script>";
-                    exit;
-
-                }else{
-                    echo "<span style='color:red;'>Please register before login..!</span>";
-                    exit();
-                }
-    
-	
-}
-    
-	
+if(isset($_SESSION['id_user']) || isset($_SESSION['id_company'])) { 
+  header("Location: index.php");
+  exit();
 }
 
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Agulia</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.7 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="css/AdminLTE.min.css">
+  <link rel="stylesheet" href="css/_all-skins.min.css">
+  <!-- Custom -->
+  <link rel="stylesheet" href="css/custom.css">
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <!-- Google Font -->
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+</head>
+<body class="hold-transition skin-black sidebar-mini">
+<div class="wrapper">
+
+    <?php include('partials/header.php');?>
+
+  <!-- Content Wrapper. Contains page content -->
+  <div class="content-wrapper" style="margin-left: 0px;">
+
+    <section class="content-header">
+      <div class="container">
+        <div class="row latest-job margin-top-50 margin-bottom-20">
+          <h1 class="text-center margin-bottom-20">Login</h1>
+          <div class="col-md-6 latest-job ">
+            <div class="small-box link_box padding-5">
+              <div class="inner">
+                <h3 class="text-center">Candidates Login</h3>
+              </div>
+              <a href="login-candidates.php" class="small-box-footer">
+                Login <i class="fa fa-arrow-circle-right"></i>
+              </a>
+            </div>
+          </div>
+          <div class="col-md-6 latest-job ">
+            <div class="small-box link_box padding-5">
+              <div class="inner">
+                <h3 class="text-center">Company Login</h3>
+              </div>
+              <a href="login-company.php" class="small-box-footer">
+                Login <i class="fa fa-arrow-circle-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    
+
+  </div>
+  <!-- /.content-wrapper -->
+
+  <footer class="main-footer" style="margin-left: 0px;">
+    <div class="text-center">
+      <strong>Copyright &copy; 2016-2017 <a href="learningfromscratch.online">Agulia</a>.</strong> All rights
+    reserved.
+    </div>
+  </footer>
+
+  <!-- /.control-sidebar -->
+  <!-- Add the sidebar's background. This div must be placed
+       immediately after the control sidebar -->
+  <div class="control-sidebar-bg"></div>
+
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery 3 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!-- Bootstrap 3.3.7 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<!-- AdminLTE App -->
+<script src="js/adminlte.min.js"></script>
+</body>
+</html>

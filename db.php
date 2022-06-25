@@ -1,17 +1,15 @@
 <?php
 
+//Your Mysql Config
 $servername = "localhost";
 $username = "root";
 $password = "";
-$db = "onlineshop";
+$dbname = "aguila";
 
-// Create connection
-$con = mysqli_connect($servername, $username, $password,$db);
+//Create New Database Connection
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
-if (!$con) {
-    die("Connection failed: " . mysqli_connect_error());
+//Check Connection
+if($conn->connect_error) {
+	die("Connection Failed: ". $conn->connect_error);
 }
-
-
-?>

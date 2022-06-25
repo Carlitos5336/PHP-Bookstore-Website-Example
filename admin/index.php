@@ -1,37 +1,93 @@
 <?php
 
 session_start();
+
+if(isset($_SESSION['id_admin'])) {
+  header("Location: dashboard.php");
+  exit();
+}
+
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<title>Admin Panel</title>
- <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="style/css/bootstrap.min.css" rel="stylesheet">
-<link href="style/css/k.css" rel="stylesheet">
-<script src="style/js/jquery.min.js"></script>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Agulia</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.7 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/ionicons/2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="../css/AdminLTE.min.css">
+  <!-- iCheck -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/skins/square/blue.css">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <!-- Google Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
 </head>
-<body>
- 
-   	 <?php include("include/header.php");?>
-   	<div class="container-fluid main-container">
-	<?php include("include/side_bar.php");?>
-    
-	<div class="col-md-9 content" style="margin-left:10px">
-  	<div class="panel panel-default">
-	<div class="panel-heading" style="background-color:#c4e17f">
-	<h1>Welcome  </h1></div><br>
-	<div class="panel-body">
-		<h3>
-<?php  //success message
-if(isset($_POST['success'])) {
-$success = $_POST["success"];
-echo "<h1 style='color:#0C0'>Your Product was added successfully &nbsp;&nbsp;  <span class='glyphicon glyphicon-ok'></h1></span>";
-}
-?></h3>
-	</div>
-</div></div></div>
-<?php include("include/js.php"); ?>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <div class="login-logo">
+    <a href="../index.php"><b>Agulia</b> Jobs</a>
+  </div>
+  <!-- /.login-logo -->
+  <div class="login-box-body">
+    <p class="login-box-msg">Admin Login</p>
+
+    <form action="checklogin.php" method="post">
+      <div class="form-group has-feedback">
+        <input type="text" class="form-control" name="username" placeholder="Username">
+        <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+      </div>
+      <div class="form-group has-feedback">
+        <input type="password" class="form-control" name="password" placeholder="Password">
+        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+      </div>
+      <div class="row">
+        <!-- /.col -->
+        <div class="col-xs-4">
+          <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
+        </div>
+        <!-- /.col -->
+      </div>
+      <?php 
+//If User Failed To log in then show error message.
+if(isset($_SESSION['loginError'])) {
+  ?>
+  <div>
+    <p class="text-center">Invalid Email/Password! Try Again!</p>
+  </div>
+<?php
+ unset($_SESSION['loginError']); }
+?>
+
+    </form>
+  </div>
+  <!-- /.login-box-body -->
+</div>
+<!-- /.login-box -->
+
+
+<!-- jQuery 3 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!-- Bootstrap 3.3.7 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<!-- AdminLTE App -->
+<script src="../js/adminlte.min.js"></script>
+<!-- iCheck -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iCheck/1.0.2/icheck.min.js"></script>
+
 </body>
 </html>
