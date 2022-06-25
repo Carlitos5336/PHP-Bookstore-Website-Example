@@ -1,25 +1,4 @@
-<h1>Agulia Jobs Board</h1>
-<p>Job Portal With PHP</p>
-<br>	
-<img src="https://i.imgur.com/Nkdvpnh.png">
+# login-coder-theme
 
-<br>	
+![image](https://user-images.githubusercontent.com/76609302/152508833-f3c4d7c7-fb63-4c86-9458-b51f910f6d1c.png)
 
-<img src="https://i.imgur.com/cfQ4trl.jpg">
-
-<br>	
-
-<img src="https://i.imgur.com/28fcjVb.png">
-
-<br>	
-
-<img src="https://i.imgur.com/DR3ZGkv.png">
-
-<br>	
-
-<img src="https://i.imgur.com/ognieQH.png">
-
-
-<br>	
-
-<img src="https://i.imgur.com/LQfUFpB.png">
